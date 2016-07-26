@@ -15,6 +15,7 @@ import os
 class Theater(object):
 	def __init__(self,filename=None):
 		self.bases = vdf.VDFDict()
+		self.path = os.path.dirname(filename)
 		self.set_filename(filename)
 
 	def set_filename(self, filename):

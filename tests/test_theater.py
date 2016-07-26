@@ -13,7 +13,7 @@ from collections import OrderedDict
 
 class TheaterCase(unittest.TestCase):
 	def test_load_file(self):
-		theater_path = "../insurgency-tools/data/mods/insurgency/2.2.7.3/scripts/theaters"
+		theater_path = os.path.join(os.getcwd(),"../insurgency-tools/data/mods/insurgency/2.2.7.3/scripts/theaters")
 		#theater_pattern = "*.theater"
 		#theater_files = glob(os.path.join(theater_path,theater_pattern))
 		#pprint(theater_files)
