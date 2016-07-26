@@ -121,7 +121,6 @@ def parse(fp, mapper=dict):
 
     return stack.pop()
 
-
 def loads(s, **kwargs):
     """
     Deserialize ``s`` (a ``str`` or ``unicode`` instance containing a JSON
@@ -175,9 +174,11 @@ def dump(obj, fp, pretty=False):
 def _dump_gen(data, pretty=False, level=0):
     indent = "\t"
     line_indent = ""
-
+    line_split = " "
     if pretty:
         line_indent = indent * level
+    if data.keys():
+        maxlen = max(len(word) for word in data.keys())
 
     for key, value in data.items():
         if isinstance(value, dict):
@@ -186,7 +187,8 @@ def _dump_gen(data, pretty=False, level=0):
                 yield chunk
             yield "%s}\n" % line_indent
         else:
-            yield '%s"%s" "%s"\n' % (line_indent, key, value)
+            line_split = " " * (maxlen - len(key) + 1)
+            yield '%s"%s"%s"%s"\n' % (line_indent, key, line_split, value)
 
 
 class BASE_INT(int_type):
