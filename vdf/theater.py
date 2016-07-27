@@ -15,33 +15,37 @@ import os
 class Theater(object):
 	def __init__(self,filename=None):
 		self.bases = vdf.VDFDict()
-		self.path = os.path.dirname(filename)
+		self.path = os.getcwd()
 		self.set_filename(filename)
 
 	def set_filename(self, filename):
-		self.filename = self.find_file(filename)
+		self.filename = filename
 		if filename is not None:
-			self.path = os.path.dirname(filename)
-			self.bases[os.path.basename(filename)] = filename
-			self.vdf = self.load_file(filename, process=False)
-			self.theater = self.load_file(filename, process=True)["theater"]
+			if self.find_file(filename=filename):
+				self.filename = self.find_file(filename=filename)
+				self.path = os.path.dirname(filename)
+				self.bases[os.path.basename(filename)] = filename
+				self.vdf = self.load_file(filename, process=False)
+				self.theater = self.load_file(filename, process=True)["theater"]
+			else:
+				self.filename = None
 
 	def find_file(self,filename):
+		if filename is None:
+			return filename
 		if os.path.exists(filename):
 			return filename
 		if os.path.exists(os.path.join(self.path,filename)):
 			return os.path.join(self.path,filename)
-		print('ERROR: File "%s" does not exist!' % filename)
 		return ""
 
 	def load_file(self,filename=None, process=False):
 		if filename is None:
-			if (self.filename is None):
-				print("ERROR: Filename missing!")
-				return {}
-			else:
-				filename = self.filename
-		obj = vdf.parse(open(filename), mapper=vdf.VDFDict)
+			filename = self.find_file(filename=self.filename)
+		try:
+			obj = vdf.parse(open(filename), mapper=vdf.VDFDict)
+		except:
+			obj = {}
 		if process:
 			return self.process_directives(obj=obj)
 		return obj
