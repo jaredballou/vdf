@@ -3,6 +3,7 @@ Module for handling theater files for Insurgency
 TODO:
 [X] Support for "#base" directive
 [ ] Support for "include" directive
+[ ] Support for "?conditional" statements
 [ ] Schema for data
 """
 __version__ = "0.0.1"
