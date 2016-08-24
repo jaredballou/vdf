@@ -15,15 +15,12 @@ test_path = os.path.join(os.getcwd(),"tests")
 out_path = os.path.join(test_path,"tmp")
 out_files = ["bases", "vdf", "theater"]
 
-theater_path = os.path.join(test_path,"data/insurgency-data/mods/insurgency/2.2.7.3/scripts/theaters")
+theater_path = os.path.join(test_path,"data", "insurgency-data", "mods", "insurgency", "2.2.7.3", "scripts", "theaters")
 theater_files = ["default_checkpoint.theater"]
 
 theater_test = os.path.join(theater_path,"default.theater")
 theater_missing = "nothere.txt"
 theater_instances = [None, theater_missing, theater_test]
-#theater_pattern = "*.theater"
-#theater_files = glob(os.path.join(theater_path,theater_pattern))
-#pprint(theater_files)
 
 class TheaterCase(unittest.TestCase):
 	def test_theater_instance(self,filename=None):
@@ -54,4 +51,3 @@ class TheaterCase(unittest.TestCase):
 				if not os.path.exists(os.path.dirname(out_file_path)):
 					os.makedirs(os.path.dirname(out_file_path))
 				vdf.dump(data, open(out_file_path,'w'), pretty=True)
-
