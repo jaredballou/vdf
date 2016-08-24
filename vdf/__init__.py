@@ -37,6 +37,13 @@ def parse(fp, mapper=dict):
     ``mapper`` specifies the Python object used after deserializetion. ``dict` is
     used by default. Alternatively, ``collections.OrderedDict`` can be used if you
     wish to preserve key order. Or any object that acts like a ``dict``.
+    TODO:
+        [ ] Merge "?conditional" items into sub-items to keep the hierarchy simpler (i.e. make the conditional name prepend to each top level key inside the conditional, and create those at the current depth.)
+        [ ] Handle split lines
+        [ ] 
+        [ ] 
+        [ ] 
+        [ ] 
     """
     if not issubclass(mapper, dict):
         raise TypeError("Expected mapper to be subclass of dict, got %s", type(mapper))
@@ -45,7 +52,14 @@ def parse(fp, mapper=dict):
 
     stack = [mapper()]
     expect_bracket = False
-
+    """
+        Regular Expression patterns
+        qkey: Quoted key '"key"'
+        key: Unquoted key 'key'
+        qval: Quoted value '"value"'
+        val: Unquoted value 'value'
+        vq_end: Double quotes '"'
+    """
     re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-z0-9\-\_]+))'
                              r'([ \t]*('
                              r'"(?P<qval>(?:\\.|[^\\"])*)(?P<vq_end>")?'

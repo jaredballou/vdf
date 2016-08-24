@@ -14,22 +14,36 @@ import sys
 import os
 
 class Theater(object):
-	def __init__(self,filename=None):
+	def __init__(self,filename=None,path=None,data=None):
+		if path is None:
+			self.path = os.getcwd()
+		else:
+			self.path = path
 		self.bases = vdf.VDFDict()
-		self.path = os.getcwd()
-		self.set_filename(filename)
+		self.theater_conditions = {}
+		self.set_filename(filename=filename, path=path)
+		#if not filename is None:
+		#	self.vdf = self.load_file(filename, process=False)
+		if not data is None:
+			pass
 
-	def set_filename(self, filename):
+	def set_filename(self, filename, path=None):
 		self.filename = filename
 		if filename is not None:
 			if self.find_file(filename=filename):
 				self.filename = self.find_file(filename=filename)
-				self.path = os.path.dirname(filename)
+				if path is None:
+					self.path = os.path.dirname(filename)
 				self.bases[os.path.basename(filename)] = filename
 				self.vdf = self.load_file(filename, process=False)
 				self.theater = self.load_file(filename, process=True)["theater"]
 			else:
 				self.filename = None
+
+	def dump(self,data=None):
+		if data is None or data == self.theater:
+			data = {"theater": self.theater}
+		return(vdf.dumps(data, pretty=True))
 
 	def find_file(self,filename):
 		if filename is None:
