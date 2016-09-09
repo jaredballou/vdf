@@ -64,7 +64,7 @@ def parse(fp, mapper=dict):
     re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-z0-9\-\_\.]+))'
                              r'([ \t]*('
                              r'"(?P<qval>(?:\\.|[^\\"])*)(?P<vq_end>")?'
-                             r'|(?P<val>[a-z0-9\-\_\*\.\/]+)'
+                             r'|(?P<val>[a-z0-9\-\_\*\/\.]+)'
                              r'))?',
                              flags=re.I)
     for idx, line in enumerate(fp):
