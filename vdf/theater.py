@@ -14,8 +14,11 @@ import sys
 import os
 
 class Theater(object):
-	def __init__(self,filename=None):
-		self.bases = vdf.VDFDict()
+	def __init__(self, filename=None):
+		self.vdf = None
+		self.processed = None
+		self.theater = None
+		self.bases = {}
 		self.path = os.getcwd()
 		self.set_filename(filename)
 
@@ -25,9 +28,7 @@ class Theater(object):
 			if self.find_file(filename=filename):
 				self.filename = self.find_file(filename=filename)
 				self.path = os.path.dirname(filename)
-				self.bases[os.path.basename(filename)] = filename
-				self.vdf = self.load_file(filename, process=False)
-				self.theater = self.load_file(filename, process=True)["theater"]
+				self.load_file(filename)
 			else:
 				self.filename = None
 
@@ -40,16 +41,23 @@ class Theater(object):
 			return os.path.join(self.path,filename)
 		return ""
 
-	def load_file(self,filename=None, process=False):
+	def load_file(self, filename=None, process=True):
 		if filename is None:
 			filename = self.find_file(filename=self.filename)
-		try:
-			obj = vdf.parse(open(filename), mapper=vdf.VDFDict)
-		except:
-			obj = {}
+		obj = vdf.parse(open(filename), mapper=vdf.VDFDict)
+		self.bases[os.path.basename(filename)] = filename
+		if self.vdf is None:
+			self.vdf = obj.copy()
 		if process:
-			return self.process_directives(obj=obj)
-		return obj
+			processed = self.process_directives(obj=obj)
+			if self.processed is None:
+				self.processed = processed
+			return processed
+		else:
+			return obj
+
+	def get_data(self, type=None):
+		return self.processed
 
 	def process_directives(self, obj):
 		#TODO: Make this recurse through the entire tree for #include support

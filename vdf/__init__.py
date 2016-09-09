@@ -1,8 +1,8 @@
 """
 Module for deserializing/serializing to and from VDF
 """
-__version__ = "2.0"
-__author__ = "Rossen Georgiev"
+__version__ = "2.0.1"
+__author__ = "Rossen Georgiev and Jared Ballou"
 
 import re
 import sys
@@ -46,13 +46,23 @@ def parse(fp, mapper=dict):
     stack = [mapper()]
     expect_bracket = False
 
+
+    re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-z0-9\-\_\.]+))'
+                             r'([ \t]*('
+                             r'"(?P<qval>(?:\\.|[^\\"])*)(?P<vq_end>")?'
+                             r'|(?P<val>[a-z0-9\-\_\*\.\/]+)'
+                             r'))?',
+                             flags=re.I)
+    """
+    # Original
+
     re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-z0-9\-\_]+))'
                              r'([ \t]*('
                              r'"(?P<qval>(?:\\.|[^\\"])*)(?P<vq_end>")?'
                              r'|(?P<val>[a-z0-9\-\_\*\.]+)'
                              r'))?',
                              flags=re.I)
-
+    """
     for idx, line in enumerate(fp):
         if idx == 0:
             line = strip_bom(line)
@@ -60,7 +70,7 @@ def parse(fp, mapper=dict):
         line = line.lstrip()
 
         # skip empty and comment lines
-        if line == "" or line[0] == '/':
+        if line == "" or line[0:2] == '//':
             continue
 
         # one level deeper
