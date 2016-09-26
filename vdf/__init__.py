@@ -4,11 +4,15 @@ Module for deserializing/serializing to and from VDF
 __version__ = "2.0.1"
 __author__ = "Rossen Georgiev and Jared Ballou"
 
+import logging
 import re
 import sys
 import struct
 from io import StringIO as unicodeIO
 from vdf.vdict import VDFDict
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Py2 & Py3 compability
 if sys.version_info[0] >= 3:
@@ -45,6 +49,7 @@ def parse(fp, mapper=dict):
         [ ] 
         [ ] 
     """
+    logger.debug("parse({}, {})".format(fp.name,type(mapper)))
     if not issubclass(mapper, dict):
         raise TypeError("Expected mapper to be subclass of dict, got %s", type(mapper))
     if not hasattr(fp, 'readline'):
@@ -61,10 +66,10 @@ def parse(fp, mapper=dict):
         val: Unquoted value 'value'
         vq_end: Double quotes '"'
     """
-    re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-z0-9\-\_\.]+))'
+    re_keyvalue = re.compile(r'^("(?P<qkey>(?:\\.|[^\\"])+)"|(?P<key>#?[a-zA-Z0-9\-\_\.]+))'
                              r'([ \t]*('
                              r'"(?P<qval>(?:\\.|[^\\"])*)(?P<vq_end>")?'
-                             r'|(?P<val>[a-z0-9\-\_\*\/\.]+)'
+                             r'|(?P<val>[a-zA-Z0-9\-\_\*\.]+[a-zA-Z0-9\-\_\*\.\/]*)'
                              r'))?',
                              flags=re.I)
     for idx, line in enumerate(fp):
@@ -73,8 +78,11 @@ def parse(fp, mapper=dict):
 
         line = line.lstrip()
 
-        # skip empty and comment lines
-        if line == "" or line[0:2] == '//':
+        # skip empty lines
+        if line == "":
+            continue
+        # skip comments for now, eventually retain them in some way
+        if line[0:2] == '//':
             continue
 
         # one level deeper
@@ -91,12 +99,12 @@ def parse(fp, mapper=dict):
                 stack.pop()
                 continue
 
-            raise SyntaxError("vdf.parse: one too many closing parenthasis (line %d)" % (idx + 1))
+            raise SyntaxError("vdf.parse: one too many closing brackets (line %d)" % (idx + 1))
 
         # parse keyvalue pairs
         while True:
             match = re_keyvalue.match(line)
-
+            logger.debug("match: {}".format(match))
             if not match:
                 try:
                     line += next(fp)
@@ -106,7 +114,8 @@ def parse(fp, mapper=dict):
 
             key = match.group('key') if match.group('qkey') is None else match.group('qkey')
             val = match.group('val') if match.group('qval') is None else match.group('qval')
-
+            logger.debug("key: {}".format(key))
+            logger.debug("val: {}".format(val))
             # we have a key with value in parenthesis, so we make a new dict obj (level deeper)
             if val is None:
                 _m = mapper()

@@ -1,32 +1,90 @@
-import vdf
+from collections import OrderedDict
+import json
 import sys
 import os
 #from glob import glob
 from pprint import pprint
-from vdf.theater import Theater
 import unittest
-from collections import OrderedDict
+import vdf
+from vdf.theater import Theater
+import yaml
 
 #TODO: Actually make this a real test case
 
-base_path = os.path.join("tests", "data", "insurgency-data", "mods", "doi", "2.4.7.2")
+#base_path = os.path.join("tests", "data", "insurgency-data", "mods", "doi", "2.4.7.2")
+
+snippet_path = "/home/insserver/insurgency-tools/theaters/snippets"
 
 def do_map(path = None, filename = None):
-	pprint(path)
-	pprint(filename)
+	#pprint(path)
+	#pprint(filename)
 	if filename is None:
 		filename = os.path.join(base_path, "maps", "src", "comacchio_d.vmf")
 	d = vdf.parse(open(filename), mapper=vdf.VDFDict)
-	print(d)
-	print(vdf.dumps(d, pretty=True))
+	#print(d)
+	#print(vdf.dumps(d, pretty=True))
 
 def do_theater(path = None, filename=None):
 	if path is None:
 		path = os.path.join(base_path, "scripts", "theaters")
 	if filename is None:
 		filename = os.path.join("tests", "data", "test_doi_coop.theater")
-	t = Theater(filename=filename, path=path)
-	"""
+	return Theater(filename=filename, path=path)
+
+def load_yaml(filename, path=None):
+	if path is None:
+		path = snippet_path
+	jp = os.path.join(path, filename)
+	if not os.path.exists(filename):
+		if not os.path.exists(jp):
+			print("Cannot find {}".format(filename))
+			return
+		else:
+			filename = jp
+	print("load_yaml(filename={}, path={})".format(filename,path))
+	fp = open(filename,"r")
+	raw = fp.read()
+	#print(raw)
+	return yaml.load(raw)
+
+def do_yaml(path=None, filename=None):
+	if filename is None:
+		filename = os.path.join(snippet_path, "teams", "vnf_doi.yaml")
+	ymldata = load_yaml(filename=filename, path=path)
+
+	theater = None
+	if "base" in ymldata.keys():
+		for base in ymldata["base"]:
+			print("base {}".format(base))
+			if theater is None:
+				theater = Theater(path=path, filename=base)
+			else:
+				theater.load_base(filename=base)
+	else:
+		theater = Theater(path=path)
+	if "theater" in ymldata.keys():
+		print("Merging theater")
+		theater.processed["theater"] = theater.merge_theaters(base=theater.processed["theater"], obj=ymldata["theater"])
+	if "snippets" in ymldata.keys():
+		for snippet in ymldata["snippets"]:
+			print("Snippet: {}".format(snippet))
+			snipdata = load_yaml(filename=snippet)
+			if "theater" in snipdata.keys():
+				theater.processed["theater"] = theater.merge_theaters(base=theater.processed["theater"], obj=snipdata["theater"])
+	return theater
+
+y = do_yaml(path="/home/insserver/insurgency-tools/theaters/vnf/doi", filename="/home/insserver/insurgency-tools/theaters/snippets/theaters/vnf_doi.yaml")
+print(y.dump())
+
+#t = do_theater(path="/home/insserver/insurgency-tools/theaters/vnf/doi", filename="/home/insserver/insurgency-tools/theaters/snippets/teams/vnf_doi.theater")
+#/home/insserver/insurgency-tools/theaters/vnf/doi/default_stronghold.theater")
+#print(t.dump(type="json"))
+#print(t.dump(type="yaml"))
+#output_stream = open("out.yaml","w")
+#print(yaml.dump(dict(t.get_data()),output_stream,default_flow_style=False))
+#print(json.dumps(t.get_data(), indent=4))
+"""
+def unused():
 	suffix = "_vnf"
 	for team, teamdata in t.theater["theater"]["teams"].iteritems():
 		for conditional, conditionaldata in teamdata.iteritems():
@@ -42,9 +100,7 @@ def do_theater(path = None, filename=None):
 			classname = "{}{}".format(classname, suffix)
 			t.theater["theater"]["player_templates"][classname] = classdata
 		t.theater["theater"]["player_templates"][classname]["import"] = classname.replace(suffix,"")
-	"""
 	#pprint(t.bases)
-	print(t.dump())
 
 	#pprint(vars(t))
 	#pprint(t.theater)
@@ -52,11 +108,10 @@ def do_theater(path = None, filename=None):
 	#print(t.dump(data=t.vdf))
 	#print(t)
 
-do_theater(path="/home/insserver/insurgency-tools/data/mods/doi/2.4.7.2/scripts/theaters")
+#path="/home/insserver/insurgency-tools/data/mods/doi/2.4.7.2/scripts/theaters")
 
 #filename="/home/doiserver/serverfiles/doi/scripts/theaters/vnf_doi.theater", 
 
-"""
 th = Theater(filename=os.path.join(theater_path,theater_file))
                         for out_file in out_files:
                                 data = getattr(th, out_file)
