@@ -1,5 +1,5 @@
 import sys
-from collections import Counter
+import collections
 
 if sys.version_info[0] >= 3:
     _iter_values = 'values'
@@ -25,7 +25,7 @@ else:
 
 
 class VDFDict(dict):
-    def __init__(self, data=None):
+    def __init__(self, data=None, default=None):
         """
         This is a dictionary that supports duplicate keys and preserves insert order
 
@@ -38,8 +38,8 @@ class VDFDict(dict):
         When the ``key`` is ``str``, instead of tuple, set will create a duplicate and get will look up ``(0, key)``
         """
         self.__omap = []
-        self.__kcount = Counter()
-
+        self.__kcount = collections.Counter()
+        self.default = default
         if data is not None:
             if not isinstance(data, (list, dict)):
                 raise ValueError("Expected data to be list of pairs or dict, got %s" % type(data))
@@ -84,7 +84,11 @@ class VDFDict(dict):
         self.__kcount[key[1]] += 1
 
     def __getitem__(self, key):
-        return super(VDFDict, self).__getitem__(self._normalize_key(key))
+        try:
+            return super(VDFDict, self).__getitem__(self._normalize_key(key))
+        except KeyError:
+            value = self[key] = type(self)()
+            return value
 
     def __delitem__(self, key):
         key = self._normalize_key(key)
