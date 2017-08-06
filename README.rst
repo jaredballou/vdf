@@ -1,4 +1,40 @@
-|pypi| |license| |coverage| |scru| |master_build|
+#VDF Parser
+
+Based on https://github.com/ValvePython/vdf
+
+Using this as a tool to process theater files for Insurgency and Day of Infamy
+
+#Requirements
+
+##Must Have
+
+[X] Needs to support deep merging of complex dictionary type object
+[X] Some nodes will have multiple values with the same key
+[X] Support #base and #include notation to source other files
+[X] Maintain ordering of all nodes.
+[ ] Arbitrary nodes need to be merged/overwritten when combining bases
+[ ] Support "?conditionals" at any level
+[ ] Link values to other types or lists, so "allowed_items" would ensure that each item exists.
+
+##Nice to have
+
+[ ] Basic syntax checker to report problems in files
+
+##Long term goals
+
+[ ] Basic conditional processing to allow things like "for each item in theater/weapons, set class_restricted to 0" or "for each item in player_classes with name matching ".*officer.*" Add all grenades and bolt action rifle a to allowed_weapons.
+
+
+#Data types
+[ ] Item: has key and value, default string type, like "ammo_type": "ammo_556x45"
+[ ] Section: a group of items or sections
+
+#Notes
+* Need to have good way to merge sections, so we can merge lists without duplicates and maintain the ordering of items.
+* Create custom value data types on the fly or with module, like "vector" or "ammo"
+* Requesting ("theater","weapons","weapon-m16a2","ammo") will look up over structure.
+
+
 
 VDF is Valve's KeyValue text file format
 
@@ -9,35 +45,19 @@ The module works just like ``json`` for (de)serialization to and from VDF.
 | Supported versions: ``kv1``
 | Unsupported: ``kv2`` and ``kv3``
 
-Install
--------
-
-You can grab the latest release from https://pypi.python.org/pypi/vdf or via ``pip``
-
-.. code:: bash
-
-    pip install vdf
-
-Install the current dev version from ``github``
-
-.. code:: bash
-
-    pip install git+https://github.com/ValvePython/vdf
 
 
-Problems & solutions
---------------------
+#Problems & solutions
 
-- There are known files that contain duplicate keys. This is supported the format and
+* There are known files that contain duplicate keys. This is supported the format and
   makes mapping to ``dict`` impossible. For this case the module provides ``vdf.VDFDict``
   that can be used as mapper instead of ``dict``. See the example section for details.
 
-- By default de-serialization will return a ``dict``, which doesn't preserve nor guarantee
+* By default de-serialization will return a ``dict``, which doesn't preserve nor guarantee
   key order due to `hash randomization`_. If key order is important then
   I suggest using ``collections.OrderedDict``, or ``vdf.VDFDict``.
 
-Example usage
--------------
+#Example usage
 
 For text representation
 
@@ -121,26 +141,6 @@ of reassign the value to the existing key.
   >>> d.has_duplicates()
   False
 
-
-.. |pypi| image:: https://img.shields.io/pypi/v/vdf.svg?style=flat&label=latest%20version
-    :target: https://pypi.python.org/pypi/vdf
-    :alt: Latest version released on PyPi
-
-.. |license| image:: https://img.shields.io/pypi/l/vdf.svg?style=flat&label=license
-    :target: https://pypi.python.org/pypi/vdf
-    :alt: MIT License
-
-.. |coverage| image:: https://img.shields.io/coveralls/ValvePython/vdf/master.svg?style=flat
-    :target: https://coveralls.io/r/ValvePython/vdf?branch=master
-    :alt: Test coverage
-
-.. |scru| image:: https://scrutinizer-ci.com/g/ValvePython/vdf/badges/quality-score.png?b=master
-    :target: https://scrutinizer-ci.com/g/ValvePython/vdf/?branch=master
-    :alt: Scrutinizer score
-
-.. |master_build| image:: https://img.shields.io/travis/ValvePython/vdf/master.svg?style=flat&label=master%20build
-    :target: http://travis-ci.org/ValvePython/vdf
-    :alt: Build status of master branch
 
 .. _DuplicateOrderedDict: https://github.com/rossengeorgiev/dota2_notebooks/blob/master/DuplicateOrderedDict_for_VDF.ipynb
 
