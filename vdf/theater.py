@@ -37,16 +37,19 @@ class Theater(object):
 			processed (VDFDict): Merged VDFDict that includes all #base and #include files
 	"""
 
-	def __init__(self, filename=None, path=None, data=None):
+	def __init__(self, filename=None, path=None, paths=None, data=None):
 		self.filename = filename
 		self.files = vdf.VDFDict()
 		self.processed = vdf.VDFDict()
 		self.bases = {}
 		self.paths = []
 		self.theater_conditions = {}
-		if path is None:
-			path = os.getcwd()
-		self.add_path(path)
+		if paths is None:
+			paths = [os.getcwd()]
+		if not path is None:
+			paths.append(path)
+		for path in paths:
+			self.add_path(path)
 		self.set_filename(filename=filename)
 		if not data is None:
 			# TODO: Support loading string or dict as data, rather than a file.
